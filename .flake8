@@ -1,0 +1,10 @@
+[flake8]
+max-line-length=80
+include=*.py
+exclude=
+    .DS_Store,
+    .git,
+    __pycache__,
+    env,
+    logging.config
+max-complexity=10
