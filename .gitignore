@@ -1,3 +1,5 @@
 env
 .DS_Store
 __pycache__
+html_coverage_report
+.coverage

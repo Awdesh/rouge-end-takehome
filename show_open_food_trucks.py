@@ -1,9 +1,10 @@
 """Entry point to show the food resources."""
 
 
+import asyncio
 import datetime
-import heapq
 import logging
+import operator
 import os
 import requests
 import typing
@@ -15,12 +16,13 @@ logger = logging.getLogger('root')
 
 
 URL = 'https://data.sfgov.org/resource/jjew-r69b.json'
+MAX_LIMIT = 10
+Location = typing.Tuple[str, str]
 
 
-def get_mobile_foods() -> typing.List['model.Location']:
-    """Fetches the mobile food locations 10 elements at a time.
-
-    Returns a sorted list by name
+async def get_mobile_food_locations():
+    """
+    Fetches the mobile food locations MAX_LIMIT elements at a time.
     """
     offset: int = 0
     app_token: str = os.environ.get('SODA_APP_TOKEN')
@@ -31,9 +33,12 @@ def get_mobile_foods() -> typing.List['model.Location']:
                                                 minute=time_tuple.tm_min)
 
     while True:
-        params: dict = {'$limit': 10, '$offset': offset,
-                        '$where': ('start24 <= "{}" AND end24 > '
-                                   '"{}"'.format(time_string, time_string)),
+        logging.info('Fetching {} records at an offset of {}'.format(MAX_LIMIT,
+                                                                     offset))
+        params: dict = {'$limit': MAX_LIMIT, '$offset': offset,
+                        '$where': ('start24 <= "{}" '
+                                   'AND end24 > "{}"'.format(time_string,
+                                                             time_string)),
                         'dayofweekstr': '{day}'.format(day=day_of_week)}
 
         if app_token:
@@ -45,36 +50,38 @@ def get_mobile_foods() -> typing.List['model.Location']:
             break
 
         response: dict = r.json()
-        heap_list: typing.List[typing.Tuple(str, str)] = list()
+        heap_list: typing.List[Location] = list()
         for resp in response:
-            heapq.heappush(heap_list, (resp.get('applicant', ''),
-                                       resp.get('location', '')))
+            heap_list.append((resp.get('applicant', ''),
+                              resp.get('location', '')))
 
-        display(sorted(heap_list))
-        offset += 10
-        if len(response) < 10:
+        display(sorted(heap_list, key=operator.itemgetter(0)))
+        offset += MAX_LIMIT
+        if len(response) < MAX_LIMIT:
             break
         continue_command = input(
             'Would you like to continue? Enter Y to continue, and N to abort :')
         if continue_command != 'Y' or continue_command == 'N':
+            logging.info('Request aborted. Exiting the program immediately.')
             break
 
 
-def display(locations: typing.List['model.Location']):
-    print('Name      Location')
+def display(locations: typing.List[Location]):
+    """
+    Displays the list of tuple of strings in which each tuple consists of a name
+    and location.
+
+    Args:
+        locations: list of tuples
+    """
+    print('Name      Address')
     for loc in locations:
         print('{name}    {location}'.format(name=loc[0], location=loc[1]))
 
 
-def display_locations():
-    heap_list = get_mobile_foods()
-    if not heap_list:
-        return
-    display(heap_list)
-    print('#####')
-    for sorted_location in sorted(heap_list):
-        print(sorted_location)
-
-
 if __name__ == '__main__':
-    display_locations()
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(get_mobile_food_locations())
+    finally:
+        loop.close()

@@ -1,0 +1,20 @@
+[paths]
+source=*.py
+
+[run]
+omit=
+    env/**
+    *_test.py
+
+[report]
+exclude_lines =
+    if __name__ == __main__:
+    loop = asyncio.get_event_loop()
+    finally:
+    loop.close()
+    try
+    loop.run_until_complete(get_mobile_food_locations())
+
+[html]
+directory=html_coverage_report
+title="Redfin Take Home Test Coverage Report"
