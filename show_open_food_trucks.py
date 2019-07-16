@@ -31,7 +31,6 @@ def get_mobile_foods() -> typing.List['model.Location']:
                                                 minute=time_tuple.tm_min)
 
     while True:
-        r = None
         params: dict = {'$limit': 10, '$offset': offset,
                         '$where': ('start24 <= "{}" AND end24 > '
                                    '"{}"'.format(time_string, time_string)),
@@ -45,7 +44,7 @@ def get_mobile_foods() -> typing.List['model.Location']:
         if r.status_code != 200:
             break
 
-        response = r.json()
+        response: dict = r.json()
         heap_list: typing.List[typing.Tuple(str, str)] = list()
         for resp in response:
             heapq.heappush(heap_list, (resp.get('applicant', ''),
