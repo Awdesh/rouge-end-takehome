@@ -50,6 +50,9 @@ async def get_mobile_food_locations():
             break
 
         response: dict = r.json()
+        if not response:
+            logging.info('Exiting as no records were found.')
+            break
         heap_list: typing.List[Location] = list()
         for resp in response:
             heap_list.append((resp.get('applicant', ''),
@@ -57,8 +60,6 @@ async def get_mobile_food_locations():
 
         display(sorted(heap_list, key=operator.itemgetter(0)))
         offset += MAX_LIMIT
-        if len(response) < MAX_LIMIT:
-            break
         continue_command = input(
             'Would you like to continue? Enter Y to continue, and N to abort :')
         if continue_command != 'Y' or continue_command == 'N':

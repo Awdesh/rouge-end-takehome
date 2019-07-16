@@ -108,14 +108,12 @@ def test_get_mobile_food_locations__no_app_token(mock_token, json_object,
 
 
 @mock.patch('os.environ.get', return_value='app-token')
-def test_get_mobile_food_locations__fewer_than_ten_results(mock_token,
-                                                           json_object,
-                                                           event_loop):
+def test_get_mobile_food_locations__no_results(mock_token, event_loop):
     """Verifies that objects arre displayed."""
     mock_response_object = mock.Mock()
     # Response is not a 200
     mock_response_object.status_code = 200
-    mock_response_object.json = mock.MagicMock(return_value=json_object[:5])
+    mock_response_object.json = mock.MagicMock(return_value=[])
 
     with mock.patch('requests.get',
                     return_value=mock_response_object) as mock_request_object, \
@@ -132,8 +130,8 @@ def test_get_mobile_food_locations__fewer_than_ten_results(mock_token,
         assert args[0] == show_open_food_trucks.URL
         assert 'headers' in kwargs
         assert 'params' in kwargs
-        # Asserts that objects are displayed.
-        assert mock_display_function.call_count == 1
+        # Asserts that no objects are displayed
+        assert mock_display_function.call_count == 0
         # Command line input is not called because the fewer than 10 results are
         # returned.
         assert mock_input_function.call_count == 0
