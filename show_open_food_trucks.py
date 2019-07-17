@@ -22,7 +22,8 @@ Location = typing.Tuple[str, str]
 
 async def get_mobile_food_locations():
     """
-    Fetches the mobile food locations MAX_LIMIT elements at a time.
+    Fetches and displays the mobile food locations information 10 elements at a
+    time.
     """
     offset: int = 0
     app_token: str = os.environ.get('SODA_APP_TOKEN')
@@ -33,8 +34,9 @@ async def get_mobile_food_locations():
                                                 minute=time_tuple.tm_min)
 
     while True:
-        logging.info('Fetching {} records at an offset of {}'.format(MAX_LIMIT,
-                                                                     offset))
+        # Preparing the request
+        logging.info('Fetching {} records with an offset of '
+                     '{}'.format(MAX_LIMIT, offset))
         params: dict = {'$limit': MAX_LIMIT, '$offset': offset,
                         '$where': ('start24 <= "{}" '
                                    'AND end24 > "{}"'.format(time_string,
@@ -47,21 +49,24 @@ async def get_mobile_food_locations():
         else:
             r = requests.get(URL, params=params)
         if r.status_code != 200:
+            logging.warning(('Valid response could not be returned. Exiting '
+                             'with status code {}'.format(r.status_code)))
             break
 
         response: dict = r.json()
         if not response:
             logging.info('Exiting as no records were found.')
             break
+        # Extracts the payload in order to display.
         heap_list: typing.List[Location] = list()
         for resp in response:
             heap_list.append((resp.get('applicant', ''),
                               resp.get('location', '')))
 
         display(sorted(heap_list, key=operator.itemgetter(0)))
-        offset += MAX_LIMIT
+        offset += len(response)
         continue_command = input(
-            'Would you like to continue? Enter Y to continue, and N to abort :')
+            'Would you like to continue? Enter Y to continue, and N to abort: ')
         if continue_command != 'Y' or continue_command == 'N':
             logging.info('Request aborted. Exiting the program immediately.')
             break
@@ -77,7 +82,7 @@ def display(locations: typing.List[Location]):
     """
     print('Name      Address')
     for loc in locations:
-        print('{name}    {location}'.format(name=loc[0], location=loc[1]))
+        print('{}    {}'.format(*loc))
 
 
 if __name__ == '__main__':

@@ -47,8 +47,8 @@ def test_get_mobile_food_locations__success(mock_token, json_object,
         assert mock_display_function.call_count == 1
         assert mock_input_function.call_count == 1
         assert (mock_input_function.call_args[0][0] ==
-                ('Would you like to continue? Enter Y to continue, and N '
-                 'to abort :'))
+                ('Would you like to continue? Enter Y to continue, and N to '
+                 'abort: '))
 
 
 @mock.patch('os.environ.get', return_value='app-token')
@@ -103,8 +103,8 @@ def test_get_mobile_food_locations__no_app_token(mock_token, json_object,
         assert mock_display_function.call_count == 1
         assert mock_input_function.call_count == 1
         assert (mock_input_function.call_args[0][0] ==
-                ('Would you like to continue? Enter Y to continue, and N '
-                 'to abort :'))
+                ('Would you like to continue? Enter Y to continue, and N to '
+                 'abort: '))
 
 
 @mock.patch('os.environ.get', return_value='app-token')
