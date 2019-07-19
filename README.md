@@ -1,4 +1,4 @@
-# Redfin Take Home Coding Exercise
+# Redfin Take Home Coding Exercise [![Build Status](https://travis-ci.org/manoflogan/rouge-end-takehome.svg?branch=master)](https://travis-ci.org/manoflogan/rouge-end-takehome)
 
 ## Table of Contents
 
